@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useFormStatus } from 'react-dom';
+import type { ItemMenu } from '@/lib/menu';
+import { Ikon } from './Ikon';
 
 export function TombolKirim({ children, className = 'btn-primary', konfirmasi }: { children: ReactNode; className?: string; konfirmasi?: string }) {
   const { pending } = useFormStatus();
@@ -65,7 +67,7 @@ export function InputFile({ name, accept, gambarSaja = false }: { name: string; 
         type="file"
         name={name}
         accept={accept ?? (gambarSaja ? 'image/*' : undefined)}
-        className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-navy-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-navy-700"
+        className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emas-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-navy-800"
         onChange={async (e) => {
           setGalat('');
           setInfo('');
@@ -124,34 +126,37 @@ export function Pesan() {
 
   if (!tampil || (!ok && !err)) return null;
   return (
-    <div className={`mb-4 rounded-lg px-4 py-3 text-sm ${err ? 'bg-red-50 text-red-700 ring-1 ring-red-200' : 'bg-hijau-50 text-hijau-700 ring-1 ring-hijau-100'}`}>
+    <div className={`mb-4 rounded-xl px-4 py-3 text-sm font-medium ${err ? 'bg-red-50 text-red-700 ring-1 ring-red-200' : 'bg-emas-50 text-navy-800 ring-1 ring-emas-300'}`}>
       {err ?? ok}
     </div>
   );
 }
 
-export type ItemMenu = { href: string; label: string; ikon: string };
-
 function aktif(pathname: string, href: string) {
-  return pathname === href || (href !== '/dashboard' && pathname.startsWith(href + '/')) || (href !== '/dashboard' && pathname === href);
+  if (href === '/dashboard') return pathname === '/dashboard';
+  if (href === '/admin') return pathname === '/admin';
+  return pathname === href || pathname.startsWith(href + '/');
 }
 
 export function MenuSamping({ menu }: { menu: ItemMenu[] }) {
   const pathname = usePathname();
   return (
     <nav className="space-y-1">
-      {menu.map((m) => (
-        <Link
-          key={m.href}
-          href={m.href}
-          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ${
-            aktif(pathname, m.href) ? 'bg-white/15 text-white' : 'text-navy-100 hover:bg-white/10 hover:text-white'
-          }`}
-        >
-          <span className="w-5 text-center" aria-hidden>{m.ikon}</span>
-          {m.label}
-        </Link>
-      ))}
+      {menu.map((m) => {
+        const a = aktif(pathname, m.href);
+        return (
+          <Link
+            key={m.href + m.label}
+            href={m.href}
+            className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+              a ? 'bg-emas-500 text-navy-900 shadow-sm' : 'text-navy-100 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            <Ikon nama={m.ikon} className="h-5 w-5 shrink-0" />
+            {m.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
@@ -165,12 +170,13 @@ export function MenuBawah({ menu }: { menu: ItemMenu[] }) {
   return (
     <>
       {buka && (
-        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setBuka(false)}>
-          <div className="absolute bottom-16 left-0 right-0 max-h-[70vh] overflow-y-auto rounded-t-2xl bg-white p-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-40 bg-navy-900/50 lg:hidden" onClick={() => setBuka(false)}>
+          <div className="absolute bottom-16 left-0 right-0 max-h-[70vh] overflow-y-auto rounded-t-3xl bg-latar p-4" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-3 text-center text-xs font-bold uppercase tracking-widest text-navy-700">Semua Menu</p>
             <div className="grid grid-cols-3 gap-2">
               {menu.map((m) => (
-                <Link key={m.href} href={m.href} className={`flex flex-col items-center gap-1 rounded-lg p-3 text-center text-xs ${aktif(pathname, m.href) ? 'bg-navy-50 text-navy-700' : 'text-slate-600'}`}>
-                  <span className="text-xl" aria-hidden>{m.ikon}</span>
+                <Link key={m.href + m.label} href={m.href} className={`flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center text-xs font-semibold ${aktif(pathname, m.href) ? 'bg-emas-500 text-navy-900' : 'bg-emas-100 text-navy-800'}`}>
+                  <Ikon nama={m.ikon} className="h-6 w-6" />
                   {m.label}
                 </Link>
               ))}
@@ -178,15 +184,19 @@ export function MenuBawah({ menu }: { menu: ItemMenu[] }) {
           </div>
         </div>
       )}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 grid grid-cols-5 border-t border-slate-200 bg-white lg:hidden">
-        {utama.map((m) => (
-          <Link key={m.href} href={m.href} className={`flex flex-col items-center gap-0.5 py-2 text-[11px] ${aktif(pathname, m.href) ? 'text-navy-700 font-semibold' : 'text-slate-500'}`}>
-            <span className="text-lg" aria-hidden>{m.ikon}</span>
-            {m.label}
-          </Link>
-        ))}
-        <button type="button" onClick={() => setBuka((b) => !b)} className={`flex flex-col items-center gap-0.5 py-2 text-[11px] ${buka ? 'text-navy-700 font-semibold' : 'text-slate-500'}`}>
-          <span className="text-lg" aria-hidden>☰</span>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 grid grid-cols-5 border-t border-[#ECE5D8] bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+        {utama.map((m) => {
+          const a = aktif(pathname, m.href);
+          return (
+            <Link key={m.href + m.label} href={m.href} className={`relative flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold ${a ? 'text-navy-800' : 'text-slate-400'}`}>
+              {a && <span className="absolute top-0 h-1 w-8 rounded-b-full bg-emas-500" />}
+              <Ikon nama={m.ikon} className="h-6 w-6" tebal={a ? 2.2 : 1.8} />
+              {m.label}
+            </Link>
+          );
+        })}
+        <button type="button" onClick={() => setBuka((b) => !b)} className={`flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold ${buka ? 'text-navy-800' : 'text-slate-400'}`}>
+          <Ikon nama="menu" className="h-6 w-6" />
           Menu
         </button>
       </nav>

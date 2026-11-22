@@ -26,10 +26,10 @@ export default async function HalamanDiskusi() {
           {daftar.map((p) => {
             const t = terakhir.find((x) => x.pengampu_id === p.id);
             return (
-              <Link key={p.id} href={`/diskusi/${p.id}`} className="card block hover:border-navy-600">
+              <Link key={p.id} href={`/diskusi/${p.id}`} className="card block hover:border-emas-400">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold text-navy-900">{p.mapel_nama} {user.peran === 'guru' && <span className="font-normal text-slate-500">· {p.kelas_nama}</span>}</p>
-                  {p.diskusi_terkunci && <Lencana>🔒 Dikunci</Lencana>}
+                  {p.diskusi_terkunci && <Lencana>Dikunci</Lencana>}
                 </div>
                 <p className="text-xs text-slate-500">{user.peran === 'siswa' ? p.guru_nama : ''}</p>
                 <p className="mt-2 line-clamp-1 text-sm text-slate-600">{t ? `${t.nama.split(' ')[0]}: ${t.isi}` : 'Belum ada pesan.'}</p>

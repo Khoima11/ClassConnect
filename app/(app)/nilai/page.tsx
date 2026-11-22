@@ -19,7 +19,7 @@ export default async function HalamanNilai() {
         {daftar.length === 0 ? <Kosong>Belum ada kelas yang Anda ajar.</Kosong> : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {daftar.map((p) => (
-              <Link key={p.id} href={`/nilai/${p.id}`} className="card hover:border-navy-600">
+              <Link key={p.id} href={`/nilai/${p.id}`} className="card hover:border-emas-400">
                 <p className="font-semibold text-navy-900">{p.mapel_nama}</p>
                 <p className="text-sm text-slate-500">Kelas {p.kelas_nama}</p>
                 <div className="mt-2">{p.nilai_terbit ? <Lencana warna="hijau">Terbit</Lencana> : <Lencana warna="kuning">Draf</Lencana>}</div>

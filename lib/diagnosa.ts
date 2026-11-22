@@ -37,6 +37,20 @@ export async function periksaDatabase(): Promise<Diagnosa | null> {
     };
   }
   const koneksi = `${info.user} @ ${info.host}:${info.port}`;
+  if (/abcdefghijk|xxxxxxxx|\[YOUR-PASSWORD\]|PASSWORDMU/i.test(mentah)) {
+    return {
+      judul: 'DATABASE_URL masih berisi contoh, bukan alamat asli',
+      penyebab: 'Isian DATABASE_URL masih memakai teks contoh dari panduan (misalnya postgres.abcdefghijk atau xxxxxxxx), bukan alamat dari project Supabase kamu.',
+      solusi: [
+        'Di Supabase, klik tombol Connect → Connection String → Transaction pooler, lalu salin alamatnya.',
+        'Ganti [YOUR-PASSWORD] dengan password database, lalu tempel ke DATABASE_URL di Vercel.',
+        'Periksa juga SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY: keduanya harus nilai asli, bukan contoh.',
+        LANGKAH_REDEPLOY,
+      ],
+      koneksi,
+      catatan: [],
+    };
+  }
   const catatan = [...info.catatan];
   if (/^db\.[a-z0-9]+\.supabase\.co$/.test(info.host)) {
     catatan.push('Alamat yang dipakai adalah "Direct connection". Di Vercel sebaiknya memakai "Transaction pooler" (host ...pooler.supabase.com, port 6543).');
@@ -75,7 +89,7 @@ export async function periksaDatabase(): Promise<Diagnosa | null> {
         ],
       };
     }
-    if (/tenant or user not found/i.test(pesan)) {
+    if (/tenant.{0,4}user.*not found/i.test(pesan)) {
       return {
         ...dasar,
         judul: 'Username atau alamat pooler tidak cocok',

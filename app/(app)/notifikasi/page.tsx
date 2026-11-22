@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import { TombolKirim } from '@/components/client';
+import { Ikon } from '@/components/Ikon';
 import { Judul, Kartu, Kosong } from '@/components/ui';
 import { requireUser } from '@/lib/auth';
 import { sql } from '@/lib/db';
@@ -8,7 +9,7 @@ import { fmtWaktu } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
-const IKON: Record<string, string> = { tugas: '📝', tenggat: '⏰', nilai: '🎯', pengumuman: '📢', pesan: '✉️', absensi: '✅' };
+const IKON: Record<string, string> = { tugas: 'tugas', tenggat: 'jam', nilai: 'nilai', pengumuman: 'pengumuman', pesan: 'pesan', absensi: 'absensi' };
 
 async function tandaiSemua() {
   'use server';
@@ -35,13 +36,13 @@ export default async function HalamanNotifikasi() {
           <ul className="divide-y divide-slate-100">
             {data.map((n) => (
               <li key={n.id}>
-                <Link href={`/notifikasi/buka?id=${n.id}`} className={`flex items-start gap-3 px-1 py-3 hover:bg-slate-50 ${n.dibaca ? 'opacity-70' : ''}`}>
-                  <span className="text-lg">{IKON[n.jenis] ?? '🔔'}</span>
+                <Link href={`/notifikasi/buka?id=${n.id}`} className={`flex items-start gap-3 px-1 py-3 hover:bg-emas-50 rounded-xl ${n.dibaca ? 'opacity-70' : ''}`}>
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${n.dibaca ? 'bg-slate-100 text-slate-500' : 'bg-emas-100 text-navy-800'}`}><Ikon nama={IKON[n.jenis] ?? 'lonceng'} /></span>
                   <div className="min-w-0 flex-1">
                     <p className={`text-sm ${n.dibaca ? '' : 'font-semibold'}`}>{n.judul}</p>
                     <p className="text-xs text-slate-400">{fmtWaktu(n.dibuat)}</p>
                   </div>
-                  {!n.dibaca && <span className="mt-1.5 h-2 w-2 rounded-full bg-navy-600" />}
+                  {!n.dibaca && <span className="mt-1.5 h-2.5 w-2.5 rounded-full bg-emas-500" />}
                 </Link>
               </li>
             ))}

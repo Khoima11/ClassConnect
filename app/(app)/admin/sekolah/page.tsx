@@ -31,7 +31,7 @@ export default async function PengaturanSekolah() {
           </Bidang>
           <label className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm">
             <input type="checkbox" name="mode_demo" defaultChecked={s.mode_demo} className="mt-0.5 h-4 w-4" />
-            <span><b>Mode demo</b>: tampilkan pita &quot;Mode Demo&quot;, tombol masuk cepat di halaman login, dan menu Reset Data Demo. Matikan saat dipakai sekolah sungguhan.</span>
+            <span><b>Mode demo</b>: tampilkan pita &quot;Mode Demo&quot;, tombol masuk cepat di halaman login, dan menu Reset Data Demo. Saat mode demo mati, aplikasi tampil seperti sistem sungguhan dan menu Reset disembunyikan. Nyalakan sementara jika ingin mengembalikan data contoh.</span>
           </label>
           <TombolKirim>Simpan</TombolKirim>
         </form>

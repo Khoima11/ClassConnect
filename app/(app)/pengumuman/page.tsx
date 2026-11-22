@@ -29,9 +29,9 @@ export default async function HalamanPengumuman() {
             const belumTayang = new Date(p.tayang_mulai) > sekarang;
             const berakhir = p.tayang_akhir && new Date(p.tayang_akhir) < sekarang;
             return (
-              <Link key={p.id} href={`/pengumuman/${p.id}`} className={`card block hover:border-navy-600 ${!p.dibaca ? 'border-l-4 border-l-navy-600' : ''}`}>
+              <Link key={p.id} href={`/pengumuman/${p.id}`} className={`card block hover:border-emas-400 ${!p.dibaca ? 'border-l-4 border-l-emas-500' : ''}`}>
                 <div className="flex flex-wrap items-center gap-2">
-                  {p.disematkan && <Lencana warna="kuning">📌 Disematkan</Lencana>}
+                  {p.disematkan && <Lencana warna="kuning">Disematkan</Lencana>}
                   {!p.dibaca && <Lencana warna="biru">Baru</Lencana>}
                   {belumTayang && <Lencana>Terjadwal</Lencana>}
                   {berakhir && <Lencana>Berakhir</Lencana>}

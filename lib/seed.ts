@@ -1,4 +1,5 @@
-// Data contoh MTs fiktif. Dipakai oleh `npm run db:setup` dan tombol Reset Data Demo (KF-33).
+// Data contoh madrasah fiktif (MTs Darul Ilmi Sriwijaya). Dipakai oleh `npm run db:setup`, halaman /setup,
+// dan tombol Reset Data Demo (KF-33). Mode demo dimatikan agar tampilan seperti aplikasi sungguhan.
 // Semua nama dan nomor di sini fiktif.
 import bcrypt from 'bcryptjs';
 import type postgres from 'postgres';
@@ -83,7 +84,7 @@ export async function isiDataDemo(sql: postgres.Sql) {
     await q.unsafe(`truncate ${TABEL.join(', ')} restart identity cascade`);
 
     await q`insert into sekolah (id, nama, nsm, alamat, kepala_nama, mode_demo)
-      values (1, 'MTs Contoh ClassConnect', '121216710000', 'Jl. Contoh No. 1, Palembang', 'H. Abdul Malik, S.Ag., M.Pd.', true)`;
+      values (1, 'MTs Darul Ilmi Sriwijaya', '121216710417', 'Jl. Cendekia No. 17, Kota Palembang, Sumatera Selatan', 'H. Abdul Malik, S.Ag., M.Pd.', false)`;
 
     const [ta] = await q`insert into tahun_ajaran (nama, semester, aktif) values ('2026/2027', 'Ganjil', true) returning id`;
     await q`insert into bobot_nilai (tahun_ajaran_id) values (${ta.id})`;

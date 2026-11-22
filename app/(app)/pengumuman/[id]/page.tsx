@@ -29,7 +29,7 @@ export default async function DetailPengumuman({ params }: { params: Promise<{ i
       <Judul judul={p.judul} aksi={<Link href="/pengumuman" className="btn-secondary">Kembali</Link>} />
       <Kartu className="max-w-3xl">
         <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-          {p.disematkan && <Lencana warna="kuning">📌 Disematkan</Lencana>}
+          {p.disematkan && <Lencana warna="kuning">Disematkan</Lencana>}
           <Lencana>Untuk: {labelSasaran(p.sasaran_peran, p.kelas)}</Lencana>
           <span>{p.pembuat ?? '-'} · {fmtWaktu(p.tayang_mulai)}</span>
           {p.tayang_akhir && <span>· tayang sampai {fmtWaktu(p.tayang_akhir)}</span>}

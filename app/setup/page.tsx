@@ -50,7 +50,7 @@ export default async function Setup({ searchParams }: { searchParams: Promise<{ 
           <form action={jalankan} className="mt-5 space-y-3">
             <label className="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm">
               <input type="radio" name="mode" value="demo" defaultChecked className="mt-1" />
-              <span><b>Versi demo</b> (disarankan sekarang): MTs fiktif lengkap dengan 68 akun dan data contoh. Semua akun memakai kata sandi demo123.</span>
+              <span><b>Data contoh siap uji</b> (disarankan sekarang): MTs Darul Ilmi Sriwijaya (fiktif) lengkap dengan 68 akun, jadwal, absensi, tugas, dan nilai. Semua akun memakai kata sandi demo123.</span>
             </label>
             <label className="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm">
               <input type="radio" name="mode" value="kosong" className="mt-1" />

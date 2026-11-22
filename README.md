@@ -2,7 +2,7 @@
 
 Aplikasi web Sistem Informasi Manajemen Pendidikan (SIMDIK) untuk madrasah tsanawiyah. ClassConnect menyatukan absensi, jadwal, tugas, nilai, pengumuman, dan komunikasi antara siswa, guru, orang tua, dan pihak madrasah dalam satu aplikasi.
 
-Versi ini adalah **versi demo**: aplikasinya berjalan seperti aplikasi sungguhan, tetapi memakai sekolah fiktif (*MTs Contoh ClassConnect*) dan data contoh. Saat sudah ada sekolah sasaran, identitas sekolah cukup diganti dari menu **Pengaturan Sekolah**, lalu data diimpor dari Excel.
+Aplikasi ini berjalan seperti sistem sungguhan dengan data contoh dari madrasah fiktif *MTs Darul Ilmi Sriwijaya*. Saat sudah ada sekolah sasaran, identitas sekolah cukup diganti dari menu **Pengaturan Sekolah**, lalu data diimpor dari Excel.
 
 Disusun oleh Kelompok 7 (Riska Ramadhani, Hani Wahda Rivera, Muhammad Aditiya), Manajemen Pendidikan Islam, UIN Raden Fatah Palembang.
 
@@ -10,7 +10,7 @@ Disusun oleh Kelompok 7 (Riska Ramadhani, Hani Wahda Rivera, Muhammad Aditiya), 
 
 ## Akun demo
 
-Semua akun demo memakai kata sandi **`demo123`**. Selama mode demo aktif, halaman login juga punya tombol masuk cepat.
+Semua akun contoh memakai kata sandi **`demo123`**. Jika **Mode demo** dinyalakan di Admin → Pengaturan Sekolah, halaman login menampilkan tombol masuk cepat, pita "Mode Demo", dan menu Reset Data Demo; bawaannya mati agar tampilan seperti aplikasi sungguhan.
 
 | Peran | Username | Keterangan |
 | --- | --- | --- |

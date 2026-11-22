@@ -1,12 +1,33 @@
 import Link from 'next/link';
-import { Judul, Kartu, Kosong, Lencana, Statistik, nilaiTampil } from '@/components/ui';
+import { Ilustrasi } from '@/components/Ilustrasi';
+import { Kartu, KotakMenu, Kosong, Lencana, Statistik, nilaiTampil } from '@/components/ui';
+import { menuUntuk } from '@/lib/menu';
 import { requireUser } from '@/lib/auth';
-import { filterPengumuman, persen, semuaKelas, tahunAktif } from '@/lib/data';
+import { filterPengumuman, persen, sekolah, semuaKelas, tahunAktif } from '@/lib/data';
 import { sql } from '@/lib/db';
 import { NAMA_HARI, fmtSingkat, fmtTanggal, hariDari, jam, tambahHari, todayWIB } from '@/lib/time';
 import type { CurrentUser } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+
+function Sambutan({ user, judul, sub }: { user: CurrentUser; judul: string; sub: string }) {
+  const menu = menuUntuk(user).filter((m) => m.href !== '/dashboard');
+  return (
+    <>
+      <section className="relative mb-5 overflow-hidden rounded-3xl bg-navy-700 px-5 py-6 text-white sm:px-8 sm:py-8">
+        <div className="relative z-10 max-w-[62%] sm:max-w-[60%]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-emas-400">{sub}</p>
+          <h1 className="mt-2 text-xl font-extrabold leading-snug text-white sm:text-3xl">{judul}</h1>
+          <span className="mt-3 block h-1 w-12 rounded-full bg-emas-500" />
+        </div>
+        <Ilustrasi className="absolute -bottom-3 right-0 h-[118%] w-auto max-w-[48%] sm:right-4 sm:max-w-[40%]" />
+      </section>
+      <div className="mb-5">
+        <KotakMenu menu={menu} />
+      </div>
+    </>
+  );
+}
 
 async function pengumumanTerbaru(user: CurrentUser) {
   return sql`
@@ -24,7 +45,7 @@ function DaftarPengumuman({ data }: { data: any[] }) {
       {data.map((p) => (
         <li key={p.id} className="flex items-start justify-between gap-2 py-2">
           <Link href={`/pengumuman/${p.id}`} className="tautan text-sm">
-            {p.disematkan && '📌 '}
+            
             {p.judul}
           </Link>
           <span className="shrink-0 text-xs text-slate-400">{!p.dibaca && <Lencana warna="biru">Baru</Lencana>}</span>
@@ -95,9 +116,10 @@ async function DashAdmin({ user }: { user: CurrentUser }) {
     from kelas k left join pengampu p on p.kelas_id = k.id left join jadwal j on j.pengampu_id = p.id
     group by k.id`;
   const ta = await tahunAktif();
+  const demo = (await sekolah()).mode_demo;
   return (
     <>
-      <Judul judul={`Selamat datang, ${user.nama}`} sub={`Tahun ajaran ${ta?.nama ?? '-'} semester ${ta?.semester ?? '-'}`} />
+      <Sambutan user={user} judul={`Selamat datang, ${user.nama}`} sub={`Tahun ajaran ${ta?.nama ?? '-'} · Semester ${ta?.semester ?? '-'}`} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Statistik label="Siswa" nilai={c.siswa} href="/admin/siswa" />
         <Statistik label="Guru" nilai={c.guru} href="/admin/guru" />
@@ -131,7 +153,7 @@ async function DashAdmin({ user }: { user: CurrentUser }) {
             <Link className="btn-secondary" href="/pengumuman/baru">Buat pengumuman</Link>
             <Link className="btn-secondary" href="/admin/laporan">Laporan pesan ({c.laporan})</Link>
             <Link className="btn-secondary" href="/admin/bobot">Bobot nilai</Link>
-            <Link className="btn-secondary" href="/admin/reset">Reset data demo</Link>
+            {demo ? <Link className="btn-secondary" href="/admin/reset">Reset data demo</Link> : <Link className="btn-secondary" href="/admin/sekolah">Pengaturan sekolah</Link>}
           </div>
         </Kartu>
       </div>
@@ -161,7 +183,7 @@ async function DashKepala({ user }: { user: CurrentUser }) {
   const peng = await pengumumanTerbaru(user);
   return (
     <>
-      <Judul judul={`Assalamualaikum, ${user.nama}`} sub={`Ringkasan madrasah · ${fmtTanggal(hari)}`} />
+      <Sambutan user={user} judul={`Assalamualaikum, ${user.nama}`} sub={`Ringkasan madrasah · ${fmtTanggal(hari)}`} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {perKelas.map((k) => (
           <Statistik key={k.id} label={`Kehadiran ${k.nama} (7 hari)`} nilai={persen(k.h, k.total) == null ? '-' : `${persen(k.h, k.total)}%`} ket={`${k.alpa} kali alpa`} href={`/rekap?kelas=${k.id}`} />
@@ -194,7 +216,7 @@ async function DashGuru({ user }: { user: CurrentUser }) {
   const [pesan] = await sql`select count(*)::int as n from pesan_langsung where penerima_id = ${user.id} and not dibaca`;
   return (
     <>
-      <Judul judul={`Assalamualaikum, ${user.nama}`} sub={`${NAMA_HARI[hari]}, ${fmtTanggal(todayWIB(), false)}`} />
+      <Sambutan user={user} judul={`Assalamualaikum, ${user.nama}`} sub={`${NAMA_HARI[hari]}, ${fmtTanggal(todayWIB(), false)}`} />
       <div className="grid gap-4 lg:grid-cols-2">
         <KartuJadwal judul="Jadwal mengajar hari ini" hari={hari} data={data} guru />
         <div className="space-y-4">
@@ -262,7 +284,7 @@ async function DashSiswa({ user }: { user: CurrentUser }) {
   const [tugas, nilai, peng] = await Promise.all([tugasTerdekat(user.id, user.kelasId), nilaiBaru(user.id, user.kelasId), pengumumanTerbaru(user)]);
   return (
     <>
-      <Judul judul={`Halo, ${user.nama.split(' ')[0]}!`} sub={`Kelas ${user.kelasNama} · ${fmtTanggal(todayWIB())}`} />
+      <Sambutan user={user} judul={`Halo, ${user.nama.split(' ')[0]}! Siap belajar hari ini?`} sub={`Kelas ${user.kelasNama} · ${fmtTanggal(todayWIB())}`} />
       <div className="grid gap-4 lg:grid-cols-2">
         <KartuJadwal judul="Jadwal hari ini" hari={hari} data={data} />
         <KartuTugas data={tugas} judul="Tugas terdekat" />
@@ -289,7 +311,7 @@ async function DashOrtu({ user }: { user: CurrentUser }) {
   const [tugas, nilai, peng] = await Promise.all([tugasTerdekat(anak.id, anak.kelas_id), nilaiBaru(anak.id, anak.kelas_id), pengumumanTerbaru(user)]);
   return (
     <>
-      <Judul judul={`Ringkasan ${anak.nama}`} sub={`Kelas ${anak.kelas_nama} · ${fmtTanggal(hari)}`} />
+      <Sambutan user={user} judul={`Perkembangan ${anak.nama}`} sub={`Kelas ${anak.kelas_nama} · ${fmtTanggal(hari)}`} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Statistik label="Kehadiran 7 hari" nilai={persen(hadir.h, hadir.total) == null ? '-' : `${persen(hadir.h, hadir.total)}%`} href="/absensi" />
         <Statistik label="Sakit / Izin" nilai={`${hadir.s} / ${hadir.i}`} />

@@ -27,12 +27,12 @@ export default async function RuangDiskusi({ params }: { params: Promise<{ id: s
     <>
       <Judul
         judul={`Diskusi ${p.mapel_nama} · ${p.kelas_nama}`}
-        sub={`${p.guru_nama}${p.diskusi_terkunci ? ' · 🔒 Diskusi dikunci guru' : ''}`}
+        sub={`${p.guru_nama}${p.diskusi_terkunci ? ' · Diskusi dikunci guru' : ''}`}
         aksi={
           <>
             <Link href="/diskusi" className="btn-secondary">Kembali</Link>
             {gurunya && (
-              <form action={kunciDiskusi}><input type="hidden" name="pengampu_id" value={p.id} /><TombolKirim className="btn-secondary">{p.diskusi_terkunci ? '🔓 Buka diskusi' : '🔒 Kunci diskusi'}</TombolKirim></form>
+              <form action={kunciDiskusi}><input type="hidden" name="pengampu_id" value={p.id} /><TombolKirim className="btn-secondary">{p.diskusi_terkunci ? 'Buka diskusi' : 'Kunci diskusi'}</TombolKirim></form>
             )}
           </>
         }
@@ -44,7 +44,7 @@ export default async function RuangDiskusi({ params }: { params: Promise<{ id: s
             const saya = m.pengirim_id === user.id;
             return (
               <div key={m.id} className={`flex ${saya ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${saya ? 'bg-navy-700 text-white' : m.peran === 'guru' ? 'bg-hijau-50 ring-1 ring-hijau-100' : 'bg-slate-100'}`}>
+                <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${saya ? 'bg-navy-700 text-white' : m.peran === 'guru' ? 'bg-emas-100 ring-1 ring-emas-200' : 'bg-white ring-1 ring-slate-200'}`}>
                   {!saya && <p className="text-xs font-semibold">{m.nama}{m.peran === 'guru' && ' · Guru'}</p>}
                   <p className={`whitespace-pre-line ${m.dihapus ? 'italic opacity-60' : ''}`}>{m.dihapus ? 'Pesan dihapus' : m.isi}</p>
                   <div className={`mt-1 flex flex-wrap items-center gap-2 text-[11px] ${saya ? 'text-navy-100' : 'text-slate-400'}`}>
