@@ -1,5 +1,5 @@
 import 'server-only';
-import { bobotAktif, nilaiPengampu, pengampuKelas, rekapAbsensi, persen, semuaKelas, type BarisNilai, type PengampuInfo } from './data';
+import { bobotAktif, nilaiKelas, persen, rekapAbsensi, semuaKelas } from './data';
 import type { CurrentUser } from './types';
 
 export async function kelasRekap(user: CurrentUser) {
@@ -11,9 +11,8 @@ export async function kelasRekap(user: CurrentUser) {
 
 export async function matriksNilai(kelasId: number) {
   const bobot = await bobotAktif();
-  const mapel = await pengampuKelas(kelasId);
-  const kolom: { p: PengampuInfo; baris: BarisNilai[]; jumlahUH: number }[] = [];
-  for (const p of mapel) kolom.push({ p, ...(await nilaiPengampu(p, bobot)) });
+  const kolom = await nilaiKelas(kelasId, bobot);
+  const mapel = kolom.map((k) => k.p);
   const siswa = kolom[0]?.baris.map((b) => ({ id: b.siswa_id, nama: b.nama })) ?? [];
   const baris = siswa.map((s) => {
     const nilai = kolom.map((k) => k.baris.find((b) => b.siswa_id === s.id)?.akhir ?? null);

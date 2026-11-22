@@ -3,7 +3,7 @@ import { Ilustrasi } from '@/components/Ilustrasi';
 import { Kartu, KotakMenu, Kosong, Lencana, Statistik, nilaiTampil } from '@/components/ui';
 import { menuUntuk } from '@/lib/menu';
 import { requireUser } from '@/lib/auth';
-import { filterPengumuman, persen, sekolah, semuaKelas, tahunAktif } from '@/lib/data';
+import { cekTenggat, filterPengumuman, persen, sekolah, semuaKelas, tahunAktif } from '@/lib/data';
 import { sql } from '@/lib/db';
 import { NAMA_HARI, fmtSingkat, fmtTanggal, hariDari, jam, tambahHari, todayWIB } from '@/lib/time';
 import type { CurrentUser } from '@/lib/types';
@@ -164,7 +164,7 @@ async function DashAdmin({ user }: { user: CurrentUser }) {
 async function DashKepala({ user }: { user: CurrentUser }) {
   const hari = todayWIB();
   const dari = tambahHari(hari, -6);
-  const perKelas = await sql`
+  const [perKelas, alpa, peng] = await Promise.all([sql`
     select k.id, k.nama,
       count(a.*) filter (where a.status = 'H')::int as h, count(a.*)::int as total,
       count(a.*) filter (where a.status = 'A')::int as alpa
@@ -173,14 +173,14 @@ async function DashKepala({ user }: { user: CurrentUser }) {
     left join jadwal j on j.pengampu_id = p.id
     left join pertemuan pt on pt.jadwal_id = j.id and pt.tanggal between ${dari} and ${hari}
     left join absensi a on a.pertemuan_id = pt.id
-    group by k.id, k.nama order by k.nama`;
-  const alpa = await sql`
+    group by k.id, k.nama order by k.nama`,
+  sql`
     select u.nama, k.nama as kelas, count(*)::int as n
     from absensi a join pertemuan pt on pt.id = a.pertemuan_id
     join users u on u.id = a.siswa_id join siswa s on s.user_id = u.id join kelas k on k.id = s.kelas_id
     where a.status = 'A' and pt.tanggal >= ${tambahHari(hari, -30)}
-    group by u.nama, k.nama order by n desc, u.nama limit 5`;
-  const peng = await pengumumanTerbaru(user);
+    group by u.nama, k.nama order by n desc, u.nama limit 5`,
+  pengumumanTerbaru(user)]);
   return (
     <>
       <Sambutan user={user} judul={`Assalamualaikum, ${user.nama}`} sub={`Ringkasan madrasah · ${fmtTanggal(hari)}`} />
@@ -205,15 +205,14 @@ async function DashKepala({ user }: { user: CurrentUser }) {
 }
 
 async function DashGuru({ user }: { user: CurrentUser }) {
-  const { hari, data } = await jadwalHariIni({ guruId: user.id });
-  const perluDinilai = await sql`
+  const [{ hari, data }, perluDinilai, [pesan]] = await Promise.all([jadwalHariIni({ guruId: user.id }), sql`
     select t.id, t.judul, k.nama as kelas, m.nama as mapel, count(pg.id)::int as n
     from tugas t join pengampu p on p.id = t.pengampu_id
     join kelas k on k.id = p.kelas_id join mapel m on m.id = p.mapel_id
     join pengumpulan pg on pg.tugas_id = t.id and pg.nilai is null
     where p.guru_id = ${user.id}
-    group by t.id, t.judul, k.nama, m.nama order by min(pg.dikirim_pada) limit 6`;
-  const [pesan] = await sql`select count(*)::int as n from pesan_langsung where penerima_id = ${user.id} and not dibaca`;
+    group by t.id, t.judul, k.nama, m.nama order by min(pg.dikirim_pada) limit 6`,
+    sql`select count(*)::int as n from pesan_langsung where penerima_id = ${user.id} and not dibaca`]);
   return (
     <>
       <Sambutan user={user} judul={`Assalamualaikum, ${user.nama}`} sub={`${NAMA_HARI[hari]}, ${fmtTanggal(todayWIB(), false)}`} />
@@ -280,8 +279,7 @@ async function nilaiBaru(siswaId: number, kelasId: number) {
 
 async function DashSiswa({ user }: { user: CurrentUser }) {
   if (!user.kelasId) return <Kosong>Akun belum dimasukkan ke kelas. Hubungi operator madrasah.</Kosong>;
-  const { hari, data } = await jadwalHariIni({ kelasId: user.kelasId });
-  const [tugas, nilai, peng] = await Promise.all([tugasTerdekat(user.id, user.kelasId), nilaiBaru(user.id, user.kelasId), pengumumanTerbaru(user)]);
+  const [{ hari, data }, tugas, nilai, peng] = await Promise.all([jadwalHariIni({ kelasId: user.kelasId }), tugasTerdekat(user.id, user.kelasId), nilaiBaru(user.id, user.kelasId), pengumumanTerbaru(user)]);
   return (
     <>
       <Sambutan user={user} judul={`Halo, ${user.nama.split(' ')[0]}! Siap belajar hari ini?`} sub={`Kelas ${user.kelasNama} · ${fmtTanggal(todayWIB())}`} />
@@ -334,6 +332,7 @@ async function DashOrtu({ user }: { user: CurrentUser }) {
 
 export default async function Dashboard() {
   const user = await requireUser();
+  await cekTenggat(user);
   switch (user.peran) {
     case 'admin': return <DashAdmin user={user} />;
     case 'kepala': return <DashKepala user={user} />;

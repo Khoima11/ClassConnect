@@ -100,6 +100,10 @@ Selesai. Bagikan tautan aplikasinya ke penguji. Aplikasi bisa dibuka dari laptop
 
 ---
 
+## Kecepatan
+
+File `vercel.json` mengatur server Vercel berjalan di **Tokyo (`hnd1`)**, sama dengan region project Supabase. Jika project Supabase dibuat di region lain, ganti nilainya, misalnya `sin1` untuk Singapura. Server dan database yang berjauhan membuat setiap halaman terasa lambat.
+
 ## Hal penting selama uji coba
 
 - **Supabase menjeda project gratis yang sepi aktivitas selama seminggu.** Buka aplikasinya minimal seminggu sekali, dan cek sehari sebelum presentasi. Project yang terlanjur dijeda bisa diaktifkan lagi dari dashboard Supabase (**Restore project**).

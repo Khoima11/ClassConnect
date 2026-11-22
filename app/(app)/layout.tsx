@@ -6,7 +6,7 @@ import { Avatar } from '@/components/Avatar';
 import { Logo, Merek } from '@/components/Logo';
 import { logout } from '@/app/login/actions';
 import { requireUser } from '@/lib/auth';
-import { cekTenggat, jumlahNotifBaru, sekolah } from '@/lib/data';
+import { jumlahNotifBaru, sekolah } from '@/lib/data';
 import { menuUntuk } from '@/lib/menu';
 import { LABEL_PERAN, type CurrentUser } from '@/lib/types';
 
@@ -20,7 +20,6 @@ function keterangan(user: CurrentUser) {
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
-  await cekTenggat(user);
   const [s, notif] = await Promise.all([sekolah(), jumlahNotifBaru(user.id)]);
   const menu = [...menuUntuk(user), { href: '/profil', label: 'Profil', ikon: 'profil' }];
 

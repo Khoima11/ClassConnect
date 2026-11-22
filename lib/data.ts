@@ -1,5 +1,6 @@
 import 'server-only';
 import { redirect } from 'next/navigation';
+import { cache } from 'react';
 import { sql } from './db';
 import { BOBOT_BAWAAN, nilaiAkhir, rata, type Bobot } from './nilai';
 import type { CurrentUser } from './types';
@@ -16,24 +17,24 @@ export type PengampuInfo = {
   diskusi_terkunci: boolean;
 };
 
-export async function sekolah() {
+export const sekolah = cache(async () => {
   const [s] = await sql`select * from sekolah where id = 1`;
   return (s ?? { nama: 'ClassConnect', mode_demo: true }) as {
     nama: string; nsm: string | null; alamat: string | null; logo_path: string | null; kepala_nama: string | null; mode_demo: boolean;
   };
-}
+});
 
 export async function tahunAktif() {
   const [t] = await sql`select * from tahun_ajaran where aktif order by id desc limit 1`;
   return t as { id: number; nama: string; semester: string } | undefined;
 }
 
-export async function bobotAktif(): Promise<Bobot> {
+export const bobotAktif = cache(async (): Promise<Bobot> => {
   const t = await tahunAktif();
   if (!t) return BOBOT_BAWAAN;
   const [b] = await sql`select tugas, uh, pts, pas from bobot_nilai where tahun_ajaran_id = ${t.id}`;
   return (b as unknown as Bobot) ?? BOBOT_BAWAAN;
-}
+});
 
 export async function semuaKelas() {
   return (await sql`
@@ -166,19 +167,47 @@ export async function nilaiPengampu(p: PengampuInfo, bobot: Bobot): Promise<{ ba
   return { baris, jumlahUH };
 }
 
+/** Nilai semua mapel dalam satu kelas sekaligus (4 query untuk seluruh kelas). */
+export async function nilaiKelas(kelasId: number, bobot: Bobot) {
+  const [daftar, siswa, tugas, nilai] = await Promise.all([
+    pengampuKelas(kelasId),
+    daftarSiswaKelas(kelasId),
+    sql`
+      select t.pengampu_id, pg.siswa_id, avg(pg.nilai)::float as rata
+      from pengumpulan pg join tugas t on t.id = pg.tugas_id join pengampu p on p.id = t.pengampu_id
+      where p.kelas_id = ${kelasId} and pg.nilai is not null
+      group by t.pengampu_id, pg.siswa_id`,
+    sql`select n.pengampu_id, n.siswa_id, n.komponen, n.urutan, n.nilai from nilai n join pengampu p on p.id = n.pengampu_id where p.kelas_id = ${kelasId}`,
+  ]);
+  return daftar.map((p) => {
+    const nilaiP = nilai.filter((n) => n.pengampu_id === p.id);
+    const jumlahUH = Math.max(1, ...nilaiP.filter((n) => n.komponen === 'UH').map((n) => n.urutan));
+    const baris: BarisNilai[] = siswa.map((sw) => {
+      const t = tugas.find((x) => x.pengampu_id === p.id && x.siswa_id === sw.id);
+      const milik = nilaiP.filter((n) => n.siswa_id === sw.id);
+      const uh: (number | null)[] = [];
+      for (let i = 1; i <= jumlahUH; i++) uh.push(milik.find((n) => n.komponen === 'UH' && n.urutan === i)?.nilai ?? null);
+      const komponen = {
+        tugas: t ? Math.round(t.rata * 10) / 10 : null,
+        uh: rata(uh),
+        pts: milik.find((n) => n.komponen === 'PTS')?.nilai ?? null,
+        pas: milik.find((n) => n.komponen === 'PAS')?.nilai ?? null,
+      };
+      const { akhir, lengkap } = nilaiAkhir(komponen, bobot);
+      return { siswa_id: sw.id, nama: sw.nama, tugas: komponen.tugas, uh, pts: komponen.pts, pas: komponen.pas, akhir, lengkap };
+    });
+    return { p, baris, jumlahUH };
+  });
+}
+
 /** Nilai seorang siswa di semua mapel kelasnya. */
 export async function nilaiSiswa(siswaId: number, kelasId: number, hanyaTerbit: boolean) {
   const bobot = await bobotAktif();
-  const daftar = await pengampuKelas(kelasId);
-  const hasil = [];
-  for (const p of daftar) {
-    if (hanyaTerbit && !p.nilai_terbit) {
-      hasil.push({ p, baris: null as BarisNilai | null });
-      continue;
-    }
-    const { baris } = await nilaiPengampu(p, bobot);
-    hasil.push({ p, baris: baris.find((b) => b.siswa_id === siswaId) ?? null });
-  }
+  const kolom = await nilaiKelas(kelasId, bobot);
+  const hasil = kolom.map(({ p, baris }) => ({
+    p,
+    baris: hanyaTerbit && !p.nilai_terbit ? null : (baris.find((b) => b.siswa_id === siswaId) ?? null),
+  }));
   return { hasil, bobot };
 }
 
@@ -207,7 +236,7 @@ export function persen(h: number, total: number) {
   return total === 0 ? null : Math.round((h / total) * 1000) / 10;
 }
 
-export async function jumlahNotifBaru(userId: number) {
+export async function jumlahNotifBaru(userId: number): Promise<number> {
   const [r] = await sql`select count(*)::int as n from notifikasi where user_id = ${userId} and not dibaca`;
   return r?.n ?? 0;
 }

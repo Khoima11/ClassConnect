@@ -4,6 +4,7 @@ import { TombolKirim } from '@/components/client';
 import { Ikon } from '@/components/Ikon';
 import { Judul, Kartu, Kosong } from '@/components/ui';
 import { requireUser } from '@/lib/auth';
+import { cekTenggat } from '@/lib/data';
 import { sql } from '@/lib/db';
 import { fmtWaktu } from '@/lib/time';
 
@@ -20,6 +21,7 @@ async function tandaiSemua() {
 
 export default async function HalamanNotifikasi() {
   const user = await requireUser();
+  await cekTenggat(user);
   const data = await sql`select * from notifikasi where user_id = ${user.id} order by dibuat desc limit 100`;
   // Notifikasi lebih dari 90 hari dihapus otomatis agar database tetap ringan.
   await sql`delete from notifikasi where user_id = ${user.id} and dibuat < now() - interval '90 days'`;
