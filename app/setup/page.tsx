@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
 import { TombolKirim } from '@/components/client';
+import { HalamanDiagnosa } from '@/components/Diagnosa';
+import { periksaDatabase } from '@/lib/diagnosa';
 import { databaseKosong, siapkanDatabase } from '@/lib/setup';
 
 export const dynamic = 'force-dynamic';
@@ -22,6 +24,9 @@ async function jalankan(fd: FormData) {
 
 export default async function Setup({ searchParams }: { searchParams: Promise<{ galat?: string }> }) {
   const { galat } = await searchParams;
+  const masalah = await periksaDatabase();
+  // Hanya masalah "tabel belum ada" yang bisa diselesaikan di halaman ini.
+  if (masalah && !masalah.detail?.startsWith('42P01')) return <HalamanDiagnosa d={masalah} />;
   if (!(await databaseKosong())) redirect('/login');
   const env = {
     DATABASE_URL: Boolean(process.env.DATABASE_URL),

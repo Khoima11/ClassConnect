@@ -4,12 +4,14 @@ import { sql } from './db';
 import { SKEMA_SQL } from './schema';
 import { isiDataDemo, isiDataKosong } from './seed';
 
+/** true = tabel belum ada atau belum berisi; melempar error jika database tidak bisa dihubungi. */
 export async function databaseKosong(): Promise<boolean> {
   try {
     const [r] = await sql`select count(*)::int as n from users`;
     return r.n === 0;
-  } catch {
-    return true; // tabel belum ada
+  } catch (e) {
+    if ((e as { code?: string }).code === '42P01') return true; // tabel belum ada
+    throw e;
   }
 }
 

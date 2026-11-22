@@ -1,4 +1,6 @@
+import { HalamanDiagnosa } from '@/components/Diagnosa';
 import { sekolah } from '@/lib/data';
+import { periksaDatabase } from '@/lib/diagnosa';
 import { linkFile } from '@/lib/storage';
 import { loginDemo } from './actions';
 import FormLogin from './FormLogin';
@@ -15,19 +17,9 @@ const DEMO = [
 
 export default async function HalamanLogin({ searchParams }: { searchParams: Promise<{ lanjut?: string }> }) {
   const sp = await searchParams;
-  let s: Awaited<ReturnType<typeof sekolah>>;
-  try {
-    s = await sekolah();
-  } catch {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-4">
-        <div className="card max-w-md text-sm">
-          <h1 className="mb-2 text-lg font-bold">Database belum siap</h1>
-          <p>Jika ini pertama kali, buka <a href="/setup" className="tautan">halaman Setup</a> untuk membuat tabel dan data contoh. Jika masih gagal, periksa isian DATABASE_URL (lihat README.md).</p>
-        </div>
-      </main>
-    );
-  }
+  const masalah = await periksaDatabase();
+  if (masalah) return <HalamanDiagnosa d={masalah} />;
+  const s = await sekolah();
   const logo = linkFile(s.logo_path);
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-navy-700 to-navy-900 p-4">
